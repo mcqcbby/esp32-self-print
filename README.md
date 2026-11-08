@@ -134,7 +134,7 @@ git clone <本仓库地址> /var/www/print
 cd /var/www/print
 
 # 2. 配置数据库（DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASS）
-cp　config.php
+cp config.example.php config.php
 
 # 3. 建表
 mysql -u<user> -p<pass> <库名> < install.sql
@@ -303,4 +303,4 @@ const int   LED_BRIGHT    = 18;                   // 亮度 0~255，越小越暗
 
 ## 十一、许可
 
-转载、商用请保留作者信息。
+可自行添加 `LICENSE`（推荐 MIT）。转载、商用请保留作者信息。

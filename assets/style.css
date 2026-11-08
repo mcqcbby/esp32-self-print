@@ -1,0 +1,331 @@
+:root {
+  --bg: #e8edf3;
+  --card: #f2f5f9;
+  --line: rgba(15, 40, 70, .10);
+  --text: #16202b;
+  --sub: #64748b;
+  --accent: #0ea5e9;
+  --accent-deep: #0284c7;
+  --ok: #10b981;
+  --err: #ef4444;
+  --shadow: 0 10px 30px rgba(20, 45, 80, .10);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #ffffff 0%, transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, #dbeafe 0%, transparent 55%),
+    var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 920px; margin: 0 auto; padding: 28px 16px 60px; }
+.wrap.narrow { max-width: 720px; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 2px 22px;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .3px; }
+.logo {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(145deg, #0ea5e9, #0284c7);
+  box-shadow: 0 6px 18px rgba(14, 165, 233, .35);
+}
+.topbar .links a { color: var(--sub); text-decoration: none; font-size: 14px; margin-left: 16px; }
+.topbar .links a:hover { color: var(--accent-deep); }
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(242,245,249,.92));
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 26px;
+  backdrop-filter: blur(14px);
+}
+
+h1 { font-size: 21px; margin: 0 0 8px; letter-spacing: .2px; }
+h2 { font-size: 17px; margin: 0 0 14px; }
+.sub { color: var(--sub); font-size: 14px; margin: 0 0 20px; }
+
+.drop {
+  position: relative;
+  border: 1.5px dashed rgba(14, 165, 233, .45);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,.55);
+  transition: .18s ease;
+}
+/* 文件输入铺满整个框：微信内置浏览器只认“直接点 input”，JS 触发的 click 会被拦 */
+.drop input[type=file] {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; font-size: 16px;
+}
+.drop:hover, .drop.over { border-color: var(--accent); background: rgba(14,165,233,.07); }
+.drop .big { font-size: 14px; font-weight: 600; }
+.drop .small { color: var(--sub); font-size: 12px; margin-top: 4px; }
+.drop .file { color: var(--accent-deep); font-weight: 600; }
+
+.row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+.field { flex: 1 1 160px; }
+.field label { display: block; font-size: 13px; color: var(--sub); margin-bottom: 6px; }
+select, input[type=text], input[type=password], input[type=number], input[type=tel], input[type=email] {
+  width: 100%; padding: 10px 12px; border-radius: 11px;
+  border: 1px solid var(--line); background: #fff; font-size: 14px; color: var(--text);
+  outline: none;
+}
+select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.14); }
+
+.seg { display: flex; gap: 8px; }
+.seg button {
+  flex: 1; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--line);
+  background: #fff; font-size: 14px; cursor: pointer; color: var(--text);
+}
+.seg button.on { background: rgba(14,165,233,.12); border-color: var(--accent); color: var(--accent-deep); font-weight: 600; }
+
+.pricebox {
+  margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; border-radius: 14px; background: rgba(255,255,255,.82);
+  border: 1px solid var(--line);
+}
+.pricebox .label { color: var(--sub); font-size: 13px; }
+.pricebox .amount { font-size: 34px; font-weight: 800; color: var(--accent-deep); line-height: 1.15; letter-spacing: .5px; }
+.pricebox .meta { font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.6; }
+.amountwrap {
+  text-align: right; padding: 8px 16px; border-radius: 12px;
+  background: linear-gradient(145deg, rgba(14,165,233,.16), rgba(2,132,199,.08));
+  border: 1px solid rgba(14,165,233,.35);
+  box-shadow: 0 6px 18px rgba(14,165,233,.18);
+  min-width: 132px;
+}
+.amountwrap .label { color: var(--accent-deep); font-weight: 600; }
+
+.btn {
+  display: inline-block; width: 100%; padding: 14px; border: none; border-radius: 13px;
+  background: linear-gradient(145deg, #0ea5e9, #0284c7); color: #fff;
+  font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 16px;
+  box-shadow: 0 10px 24px rgba(14,165,233,.30);
+  transition: .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn.ghost { background: #fff; color: var(--accent-deep); border: 1px solid var(--accent); box-shadow: none; }
+.btn.gray { background: #fff; color: var(--sub); border: 1px solid var(--line); box-shadow: none; }
+
+.tip { color: var(--sub); font-size: 13px; line-height: 1.7; }
+.ok { color: var(--ok); }
+.err { color: var(--err); }
+
+.kv { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.kv td { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.kv td:first-child { color: var(--sub); width: 130px; }
+
+.paypick { display: flex; gap: 10px; margin-top: 8px; }
+.paypick button {
+  flex: 1; padding: 14px; border-radius: 13px; border: 1px solid var(--line);
+  background: #fff; font-size: 15px; cursor: pointer;
+}
+.paypick button:hover { border-color: var(--accent); color: var(--accent-deep); }
+
+.code {
+  text-align: center; padding: 22px; border-radius: 16px;
+  background: rgba(14,165,233,.08); border: 1px solid rgba(14,165,233,.25);
+  margin: 18px 0;
+}
+.code .c { font-size: 38px; font-weight: 800; letter-spacing: 6px; color: var(--accent-deep); }
+.code .h { color: var(--sub); font-size: 13px; margin-bottom: 8px; }
+
+.badge { display: inline-block; padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge.s0 { background: #fef3c7; color: #b45309; }
+.badge.s1 { background: #dbeafe; color: #1d4ed8; }
+.badge.s2 { background: #e0f2fe; color: #0369a1; }
+.badge.s3 { background: #d1fae5; color: #047857; }
+.badge.s4 { background: #fee2e2; color: #b91c1c; }
+.badge.s5 { background: #ede9fe; color: #6d28d9; }
+
+table.list { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.list th, table.list td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+table.list th { color: var(--sub); font-weight: 600; font-size: 12px; }
+table.list td.small { color: var(--sub); }
+
+.nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.nav a {
+  padding: 9px 14px; border-radius: 11px; text-decoration: none; font-size: 14px;
+  color: var(--sub); background: rgba(255,255,255,.6); border: 1px solid var(--line);
+}
+.nav a.on { color: var(--accent-deep); border-color: var(--accent); background: rgba(14,165,233,.10); font-weight: 600; }
+
+.toast {
+  position: fixed; left: 50%; top: 24px; transform: translateX(-50%);
+  background: #0f172a; color: #fff; padding: 12px 18px; border-radius: 12px;
+  font-size: 14px; z-index: 99; opacity: 0; transition: .2s;
+}
+.toast.show { opacity: 1; }
+
+.progress { margin: 6px 0 14px; }
+.progress .bar {
+  height: 8px; border-radius: 8px; background: rgba(14,165,233,.12); overflow: hidden;
+}
+.progress .bar i {
+  display: block; height: 100%; width: 2%; border-radius: 8px;
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9); transition: width .25s;
+}
+.progress .ptext { margin-top: 8px; font-size: 13px; color: var(--sub); }
+
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 12px; }
+.thumbs img {
+  height: 132px; border-radius: 8px; border: 1px solid var(--line);
+  background: #fff; box-shadow: 0 2px 8px rgba(15,23,42,.06);
+}
+
+@media (max-width: 640px) {
+  .wrap { padding: 16px 12px 40px; }
+  .card { padding: 18px; border-radius: 16px; }
+  h1 { font-size: 18px; }
+  .pricebox { flex-wrap: wrap; }
+  .pricebox .amount { font-size: 28px; }
+  .amountwrap { min-width: 0; flex: 1 1 100%; text-align: left; margin-top: 8px; }
+  .field { flex: 1 1 100%; }
+  .code .c { font-size: 30px; }
+}
+
+/* 打印设备在线状态 */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0 18px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--sub);
+  background: rgba(15, 40, 70, .06);
+  border: 1px solid var(--line);
+}
+.pill i { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block; }
+.pill.on { color: #047857; background: rgba(16, 185, 129, .12); border-color: rgba(16, 185, 129, .35); }
+.pill.on i { background: var(--ok); box-shadow: 0 0 0 3px rgba(16, 185, 129, .18); }
+.pill.off { color: #b91c1c; background: rgba(239, 68, 68, .10); border-color: rgba(239, 68, 68, .30); }
+.pill.off i { background: var(--err); }
+
+/* 收费标准醒目化 */
+.pricebox {
+  align-items: stretch;
+  padding: 16px 18px;
+  background: linear-gradient(150deg, #ffffff, #f4faff);
+  border: 1px solid rgba(14, 165, 233, .28);
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 8px 22px rgba(20, 45, 80, .08);
+}
+.pricewrap { flex: 1 1 auto; min-width: 0; }
+.ptitle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 800; color: var(--text);
+  letter-spacing: .4px; margin-bottom: 10px;
+}
+.ptitle::before { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+.pgrid { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 8px 12px; }
+.pitem {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 8px 10px; border-radius: 9px; background: rgba(14, 165, 233, .07);
+}
+.pitem span { font-size: 13px; color: #334155; }
+.pitem b { font-size: 17px; font-weight: 800; color: var(--accent-deep); white-space: nowrap; }
+.pitem b i { font-style: normal; font-size: 11px; font-weight: 500; color: var(--sub); margin-left: 2px; }
+.pnote { margin-top: 8px; font-size: 12px; color: var(--sub); }
+
+@media (max-width: 520px) {
+  .pgrid { grid-template-columns: 1fr; }
+}
+
+/* 收费标准：紧凑 + 色彩提示（覆盖上一版大卡片） */
+.pricebox {
+  align-items: center;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .86);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.ptitle { font-size: 13px; font-weight: 700; color: var(--sub); margin-bottom: 8px; gap: 6px; }
+.ptitle::before { width: 5px; height: 5px; border-radius: 50%; }
+.pchips { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 9px; border-radius: 8px;
+  font-size: 12px; color: #334155;
+  background: #f4f7fb; border: 1px solid rgba(15, 40, 70, .08);
+}
+.chip b { font-size: 13px; font-weight: 800; color: var(--accent-deep); }
+.chip.dup { background: #fff; border-style: dashed; border-color: rgba(14, 165, 233, .35); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.dot.bw { background: linear-gradient(135deg, #94a3b8, #475569); }
+.dot.cl { background: conic-gradient(from 0deg, #ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #ef4444); }
+.pnote { margin-top: 7px; font-size: 11px; color: #94a3b8; }
+.amountwrap { padding: 6px 14px; min-width: 112px; border-radius: 10px; }
+.pricebox .amount { font-size: 26px; }
+.pricebox .label { font-size: 12px; }
+
+@media (max-width: 520px) {
+  .pgrid { grid-template-columns: 1fr; }
+  .amountwrap { flex: 1 1 100%; text-align: left; margin-top: 10px; }
+  .pricebox .amount { font-size: 24px; }
+}
+
+/* 手机端：收费标准两列更小 */
+@media (max-width: 560px) {
+  .pricebox { padding: 10px 11px; margin-top: 14px; }
+  .ptitle { font-size: 12px; margin-bottom: 6px; }
+  .pchips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .chip { font-size: 10.5px; padding: 3px 6px; gap: 4px; white-space: nowrap; overflow: hidden; }
+  .chip b { font-size: 11px; }
+  .dot { width: 6px; height: 6px; }
+  .pnote { margin-top: 5px; font-size: 10px; }
+  .amountwrap { min-width: 0; padding: 4px 10px; margin-top: 8px; }
+  .pricebox .amount { font-size: 22px; }
+  .pricebox .label { font-size: 11px; }
+}
+
+/* 颜色/单双面按钮：缩小，不撑满整行 */
+.seg { display: inline-flex; gap: 6px; }
+.seg button {
+  flex: 0 0 auto;
+  min-width: 60px;
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+.field label { margin-bottom: 5px; }
+
+@media (max-width: 560px) {
+  .segfield { flex: 1 1 calc(50% - 8px); }
+  .seg { width: 100%; gap: 5px; }
+  .seg button { flex: 1 1 0; min-width: 0; padding: 6px 6px; font-size: 12px; border-radius: 8px; }
+  .row { gap: 10px; margin-top: 14px; }
+}
+
+/* 输入框缩小一些 */
+select, input[type=text], input[type=password], input[type=number], input[type=tel], input[type=email] {
+  padding: 7px 10px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+.field label { font-size: 12.5px; }
+
+@media (max-width: 560px) {
+  select, input[type=text], input[type=password], input[type=number], input[type=tel], input[type=email] {
+    padding: 6px 9px;
+    font-size: 12.5px;
+    border-radius: 8px;
+  }
+  .field label { font-size: 12px; margin-bottom: 4px; }
+}
