@@ -134,7 +134,7 @@ git clone <本仓库地址> /var/www/print
 cd /var/www/print
 
 # 2. 配置数据库（DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASS）
-cp config.example.php config.php
+cp　config.php
 
 # 3. 建表
 mysql -u<user> -p<pass> <库名> < install.sql
