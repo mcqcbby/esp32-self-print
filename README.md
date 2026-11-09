@@ -4,7 +4,7 @@
 
 - 服务端：纯 PHP + MySQL，虚拟主机也能跑（不需要 `exec`、不需要 GD/Imagick）
 - 排版：docx / xlsx / pptx / pdf 全部在浏览器端解析排版，html2canvas 拍成 1654×2339（A4 200dpi）整页图
-- 出纸：ESP32-S3 + 打印机 WiFi IPP（`https://打印机IP:631/ipp/print`），不占用电脑、不需要 USB 直连
+- 出纸：ESP32-S3 + 打印机 WiFi IPP（`https://打印机IP:631/ipp/print`），不占用电脑、不需要 USB 直连（打印机和esp32在同一个局域网）
 
 ---
 
