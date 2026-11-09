@@ -294,7 +294,7 @@ const int   LED_BRIGHT    = 18;                   // 亮度 0~255，越小越暗
 
 ## 十、安全与提交注意
 
-- `config.php` 含数据库密码，**不要提交**（仓库 `.gitignore` 已排除）
+- `config.php` 含数据库密码
 - `uploads/`、`logs/` 是运行产物，不提交
 - 上线前删 `install.php`、`_diag.php`，改后台密码与 `agent_token`
 - 打印盒接口只校验 `token`，建议放内网或加 IP 白名单
