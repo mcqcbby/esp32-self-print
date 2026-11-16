@@ -366,7 +366,6 @@ const int   LED_BRIGHT    = 15;                   // 0~255
 - 无 Word/WPS/LibreOffice 时页数按浏览器排版，可能与 Word 差 1~2 页
 - 超大文档（>100 页）渲染占内存，`MAX_PAGES` 可下调
 - 打印盒按单台设备设计，多台需扩展任务分配
-- EPSON L4168 只支持 ESC/P-R / JPEG，不支持 PCL
 - 仅支持 IPPS 的机型必须用 `https://IP:631`
 - CPU 负载为估算值，用于观察趋势
 
@@ -374,8 +373,8 @@ const int   LED_BRIGHT    = 15;                   // 0~255
 
 ## 安全
 
-- `config.php` 含数据库密码，不要提交
-- `uploads/`、`logs/` 为运行产物，不提交
+- `config.php` 含数据库密码
+- `uploads/`、`logs/` 为运行产物
 - 上线前删除 `install.php`、`_diag.php`，修改后台密码与 `agent_token`
 - 打印盒接口只校验 token，建议放内网或加 IP 白名单
 
