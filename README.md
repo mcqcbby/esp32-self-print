@@ -74,7 +74,7 @@ ESP32 每 3 秒 poll ──> 原子领取任务 ──> 逐页下载 ──> IPP
 ├── query.php                订单查询
 ├── notify.php / return.php  易支付回调
 ├── install.php / install.sql 安装入口与建表
-├── config.php               数据库与目录配置（含密码，不要提交）
+├── config.php               数据库与目录配置
 ├── api/
 │   ├── create.php           建单计费
 │   ├── page.php             页面图上传（校验 JPEG/PNG 文件头）
@@ -312,8 +312,8 @@ const int   LED_BRIGHT    = 15;                   // 0~255
 
 ## 安全
 
-- `config.php` 含数据库密码，不要提交
-- `uploads/`、`logs/` 为运行产物，不提交
+- `config.php` 含数据库密码
+- `uploads/`、`logs/` 为运行产物
 - 上线前删除 `install.php`、`_diag.php`，修改后台密码与 `agent_token`
 - 打印盒接口只校验 token，建议放内网或加 IP 白名单
 
