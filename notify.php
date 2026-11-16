@@ -32,12 +32,4 @@ q('UPDATE orders SET status=1, trade_no=?, pay_type=?, pay_time=? WHERE id=? AND
 ]);
 log_line('epay', 'paid ' . $order['order_no'] . ' money=' . $money);
 
-// IPP 直打：付款成功立刻把 PDF 交给打印机（同步执行，失败可后台重打）
-if (print_mode() === 'ipp' && ipp_target() !== '') {
-    @ignore_user_abort(true);
-    @set_time_limit(300);
-    list($pok, $pmsg) = run_print_job((int)$order['id']);
-    log_line('print', 'ipp ' . $order['order_no'] . ' ' . ($pok ? 'ok' : 'fail') . ' ' . $pmsg);
-}
-
 echo 'success';

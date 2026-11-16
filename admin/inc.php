@@ -1,5 +1,6 @@
 <?php
-header('Cache-Control: no-cache, must-revalidate');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once dirname(__DIR__) . '/lib/print.php';
 require_once dirname(__DIR__) . '/lib/epay.php';
@@ -16,7 +17,7 @@ function admin_head($title, $active = '')
     echo '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">';
     echo '<meta name="viewport" content="width=device-width,initial-scale=1">';
     echo '<title>' . h($title) . ' - ' . h($site) . ' 后台</title>';
-    echo '<link rel="stylesheet" href="../assets/style.css"></head><body><div class="wrap">';
+    echo '<link rel="stylesheet" href="../assets/style.css?v=' . @filemtime(dirname(__DIR__) . '/assets/style.css') . '"></head><body><div class="wrap">';
     echo '<div class="topbar"><div class="brand"><span class="logo"></span>' . h($site) . ' 后台</div>';
     echo '<div class="links"><a href="../index.php" target="_blank">前台</a><a href="logout.php">退出</a></div></div>';
     echo '<div class="nav">';
@@ -33,4 +34,16 @@ function admin_head($title, $active = '')
 function admin_foot()
 {
     echo '</div></body></html>';
+}
+
+/** 订单原始文件的绝对路径；DB 里没记就按订单号去 uploads/raw 找 */
+function order_src_path($o)
+{
+    if (!empty($o['file_path'])) {
+        $p = abs_path($o['file_path']);
+        if ($p !== '' && is_file($p)) return $p;
+    }
+    $g = glob(RAW_DIR . '/' . $o['order_no'] . '.*');
+    if ($g && is_file($g[0])) return $g[0];
+    return '';
 }

@@ -4,13 +4,10 @@ admin_guard();
 
 $saved = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $keys = ['site_name', 'site_domain', 'price_bw', 'price_color', 'price_bw_duplex', 'price_color_duplex', 'min_amount', 'epay_url', 'epay_pid', 'epay_key', 'pay_types', 'agent_token', 'pcl_color', 'print_mode', 'ipp_url', 'printer_lang', 'print_fit'];
+    $keys = ['site_name', 'site_domain', 'price_bw', 'price_color', 'price_bw_duplex', 'price_color_duplex', 'min_amount', 'epay_url', 'epay_pid', 'epay_key', 'pay_types', 'agent_token', 'pcl_color', 'printer_lang', 'print_fit'];
     foreach ($keys as $k) {
         if (isset($_POST[$k])) cfg_set($k, trim((string)$_POST[$k]));
     }
-    $m = isset($_POST['print_mode']) ? (string)$_POST['print_mode'] : 'ipp';
-    cfg_set('print_mode', $m === 'esp32' ? 'esp32' : 'ipp');
-    cfg_set('print_target', $m === 'esp32' ? 'esp32' : 'ipp');
     if (!empty($_POST['new_pass'])) {
         cfg_set('admin_pass', password_hash((string)$_POST['new_pass'], PASSWORD_DEFAULT));
     }
@@ -33,22 +30,14 @@ admin_head('系统设置', 'settings');
 
     <h2 style="margin-top:22px">出纸方式</h2>
     <div class="row">
-      <div class="field"><label>打印通道</label>
-        <select name="print_mode">
-          <option value="ipp" <?= cfg('print_mode', 'ipp') === 'ipp' ? 'selected' : '' ?>>局域网 IPP 直打</option>
-          <option value="esp32" <?= cfg('print_mode', 'ipp') === 'esp32' ? 'selected' : '' ?>>ESP32 USB 打印盒</option>
-        </select>
+      <div class="field" style="flex:1 1 300px"><label>打印通道</label>
+        <div class="tip" style="margin:4px 0 0">ESP32 打印盒</div>
       </div>
-      <div class="field"><label>打印语言（ESP32 通道）</label>
+      <div class="field"><label>打印语言</label>
         <select name="printer_lang">
           <option value="pcl5" <?= cfg('printer_lang', 'escpr') === 'pcl5' ? 'selected' : '' ?>>PCL5 / PCL6</option>
           <option value="escpr" <?= cfg('printer_lang', 'escpr') === 'escpr' ? 'selected' : '' ?>>ESC/P-R</option>
         </select>
-      </div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <div class="field" style="flex:2 1 260px"><label>打印机 IPP 地址</label>
-        <input type="text" name="ipp_url" value="<?= h(cfg('ipp_url', '')) ?>" placeholder="https://192.168.1.105:631/ipp/print">
       </div>
     </div>
 
@@ -85,7 +74,7 @@ admin_head('系统设置', 'settings');
 
     <h2 style="margin-top:22px">后台</h2>
     <div class="row">
-      <div class="field"><label>修改密码（留空不改）</label><input type="password" name="new_pass" placeholder="新密码"></div>
+      <div class="field"><label>修改密码</label><input type="password" name="new_pass" placeholder="留空不改"></div>
       <div class="field" style="flex:2 1 240px"><label>设备令牌</label><input type="text" name="agent_token" value="<?= h(cfg('agent_token')) ?>"></div>
     </div>
 

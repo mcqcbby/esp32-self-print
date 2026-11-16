@@ -1,8 +1,8 @@
 <?php
 /**
  * 上传单页图片：POST order_no + index + file
- * - ESP32/PCL 模式：浏览器上传 1 位 PNG
- * - IPP 直打模式：浏览器上传 JPEG（彩色保留）
+ * - ESC/P-R 通道：浏览器上传 JPEG
+ * - PCL5 通道：浏览器上传 PNG
  * 全部页面到齐后按真实页数复核金额
  */
 require_once dirname(__DIR__) . '/lib/print.php';
@@ -21,9 +21,9 @@ $f = $_FILES['file'];
 if ($f['error'] !== UPLOAD_ERR_OK) json_out(['ok' => false, 'msg' => '第 ' . $index . ' 页上传失败 (' . $f['error'] . ')']);
 if ($f['size'] > MAX_PAGE_MB * 1024 * 1024) json_out(['ok' => false, 'msg' => '单页图片过大']);
 
-$mode = print_mode();
+$jpg = (printer_lang() === 'escpr');
 $head = @file_get_contents($f['tmp_name'], false, null, 0, 8);
-if ($mode === 'ipp' || ($mode === 'esp32' && printer_lang() === 'escpr')) {
+if ($jpg) {
     if ($head === false || substr($head, 0, 3) !== "\xFF\xD8\xFF") {
         json_out(['ok' => false, 'msg' => '第 ' . $index . ' 页不是有效的 JPEG 图片']);
     }

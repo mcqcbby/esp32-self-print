@@ -13,7 +13,7 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/func.php';
 require_once __DIR__ . '/png.php';
 
-/** 列出订单的页面图片（按文件名排序；PCL 走 png，IPP 走 jpg） */
+/** 列出订单的页面图片（按文件名排序；PCL5 走 png，ESC/P-R 走 jpg） */
 function page_images($pagesDir)
 {
     if (!is_dir($pagesDir)) return [];
@@ -176,7 +176,7 @@ function build_pcl($order)
 
     if ($built < 1 || filesize($path) < 1024) {
         @unlink($path);
-        return [false, '打印文件生成失败（页面图片无法解码）'];
+        return [false, '打印文件生成失败，页面图片无法解码'];
     }
     return [true, $path];
 }

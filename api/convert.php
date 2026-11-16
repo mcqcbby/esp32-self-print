@@ -9,7 +9,7 @@
  *   2) Linux 服务器：LibreOffice headless（soffice）转 PDF
  * 两条都没有时返回 code=no_engine，前端才会退回浏览器排版。
  *
- * 打印链路仍然是纯 PHP IPP，此接口只负责“排版”。
+ * 打印链路由 ESP32 打印盒负责，此接口只负责“排版”。
  */
 require_once dirname(__DIR__) . '/lib/print.php';
 set_time_limit(120);
@@ -17,7 +17,7 @@ set_time_limit(120);
 if (empty($_FILES['file'])) json_out(['ok' => false, 'msg' => '没有收到文件']);
 $f = $_FILES['file'];
 if ($f['error'] !== UPLOAD_ERR_OK) json_out(['ok' => false, 'msg' => '上传失败 (' . $f['error'] . ')']);
-if ($f['size'] > 10 * 1024 * 1024) json_out(['ok' => false, 'msg' => '文件过大（限 10MB）']);
+if ($f['size'] > 10 * 1024 * 1024) json_out(['ok' => false, 'msg' => '文件过大，限 10MB']);
 
 $name = (string)$f['name'];
 $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -25,7 +25,7 @@ if (!in_array($ext, ['docx', 'doc'], true)) json_out(['ok' => false, 'msg' => '�
 
 // Linux 宝塔默认禁用 exec，直接给明确原因，别让 PHP 抛 Fatal error
 if (!function_exists('exec') || !is_callable('exec')) {
-    json_out(['ok' => false, 'code' => 'no_exec', 'msg' => '本服务器禁用了 exec，无法调用排版引擎（会改用浏览器排版）']);
+    json_out(['ok' => false, 'code' => 'no_exec', 'msg' => '本服务器禁用了 exec，无法调用排版引擎，会改用浏览器排版']);
 }
 
 $root = dirname(__DIR__);
@@ -93,7 +93,7 @@ function pick_engine($root)
 list($eng, , $engCode) = pick_engine($root);
 if ($eng === null) {
     @unlink($src);
-    json_out(['ok' => false, 'code' => 'no_engine', 'msg' => '本服务器没有排版引擎（Windows 需装 Word/WPS，Linux 需装 LibreOffice）']);
+    json_out(['ok' => false, 'code' => 'no_engine', 'msg' => '本服务器没有排版引擎，Windows 需装 Word/WPS，Linux 需装 LibreOffice']);
 }
 
 $tpl = $eng[0];
@@ -111,7 +111,7 @@ if (!is_file($pdf) || filesize($pdf) < 1024) {
         . ' out=' . substr(implode('|', $out), 0, 400) . "\n", FILE_APPEND);
     @unlink($src);
     json_out(['ok' => false, 'code' => 'convert_failed',
-        'msg' => '排版转换失败（' . $kind . '）' . ($detail !== '' ? '：' . substr($detail, 0, 100) : '')]);
+        'msg' => '排版转换失败：' . $kind . ($detail !== '' ? '，' . substr($detail, 0, 100) : '')]);
 }
 
 @unlink($src);

@@ -98,6 +98,7 @@
     if (!allowed(f)) { toast('不支持的文件类型，请使用 docx/pptx/xlsx/pdf/png/jpg'); return; }
     if (f.size > 10 * 1024 * 1024) { toast('文件超过 10MB'); return; }
     chosen = f;
+    state.srcFile = f;   // 原始文件，建单后补传给后台，供管理员预览/下载
     state.pages = 0;
     // 非 Word 文件不涉及排版差异，页数就是文件本身的页数
     state.layout = /\.(docx?|doc)$/i.test(f.name) ? 'browser' : 'pdf';
@@ -105,7 +106,7 @@
     dropTitle.textContent = f.name;
     dropHint.textContent = (f.size / 1024 / 1024).toFixed(2) + ' MB，点击下方按钮开始';
     if (/\.(docx?|doc)$/i.test(f.name)) {
-      dropHint.textContent = '正在用 Word 排版（页数与版式和 Word 一致）…';
+      dropHint.textContent = '正在用 Word 排版，页数与版式和 Word 一致…';
       convertPdf(f).then(function (pdf) {
         if (chosen !== f) return;
         chosen = pdf;
@@ -117,7 +118,7 @@
         state.layout = 'browser';
         // 服务器没装排版引擎 / 禁用了 exec：属正常降级，不当成报错吓用户
         if (/no_exec|no_script|no_engine|没有排版引擎|禁用|缺少转换脚本|undefined function|NO_COM|未安装/.test(m)) {
-          dropHint.textContent = '本服务器没有排版引擎（Windows 装 Word/WPS，Linux 装 LibreOffice），改用浏览器排版（页数会与 Word 有差异）';
+          dropHint.textContent = '本服务器没有排版引擎，Windows 装 Word/WPS，Linux 装 LibreOffice，改用浏览器排版，页数会与 Word 有差异';
         } else if (/convert_failed|排版转换失败/.test(m)) {
           dropHint.textContent = '排版转换失败，改用浏览器排版：' + m;
         } else {
@@ -174,8 +175,8 @@
   }
 
   function canvasToBlob(canvas, colorMode, mode) {
-    if (mode === 'ipp' || mode === 'escpr') {
-      // IPP 直打与 ESC/P-R（爱普生 JPEG 通道）只能送 JPEG；黑白模式在这里先转灰度再压成 JPEG
+    if (mode === 'escpr') {
+      // ESC/P-R（爱普生 JPEG 通道）只能送 JPEG；黑白模式在这里先转灰度再压成 JPEG
       var out = colorMode ? canvas : grayCanvas(canvas);
       return new Promise(function (res) {
         out.toBlob(function (b) { res(b); }, 'image/jpeg', 0.92);
@@ -195,7 +196,7 @@
         } catch (e) {
           // 服务器把报错 HTML 混进了响应：折算成一句人话，不再抛 JSON 语法错误
           var plain = t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
-          throw new Error('服务器返回异常（HTTP ' + r.status + '）' + (plain ? '：' + plain : ''));
+          throw new Error('服务器返回异常，HTTP ' + r.status + (plain ? '：' + plain : ''));
         }
       });
     });
@@ -211,7 +212,7 @@
     var dorm = document.getElementById('dorm').value.trim();
     if (!buyer) { toast('请填写姓名'); document.getElementById('buyer').focus(); return; }
     if (!phone) { toast('请填写电话'); document.getElementById('phone').focus(); return; }
-    if (!/^\d{6,15}$/.test(phone)) { toast('电话请填数字（6-15 位）'); document.getElementById('phone').focus(); return; }
+    if (!/^\d{6,15}$/.test(phone)) { toast('电话请填数字，6-15 位'); document.getElementById('phone').focus(); return; }
     if (!dorm) { toast('请填写宿舍号'); document.getElementById('dorm').focus(); return; }
     var file = chosen;
     btnUpload.disabled = true;
@@ -278,8 +279,20 @@
       var order = d;
       mode = order.mode || 'esp32';
       currentOrder = order;
-      var ext = (mode === 'ipp' || mode === 'escpr') ? 'jpg' : 'png';
+      var ext = (mode === 'escpr') ? 'jpg' : 'png';
       var chain = Promise.resolve();
+      // 先把原始文件传给服务器，后台才能预览和下载；失败不影响出纸
+      if (state.srcFile) {
+        chain = chain.then(function () {
+          var fs = new FormData();
+          fs.append('order_no', order.order_no);
+          fs.append('file_name', state.srcFile.name);
+          fs.append('file', state.srcFile, state.srcFile.name);
+          return post('api/src.php', fs).catch(function (e) {
+            toast('源文件没传上，后台无法预览：' + (e.message || '网络错误'));
+          });
+        });
+      }
       var done = 0;
       pages.forEach(function (cv, i) {
         chain = chain.then(function () {
@@ -341,8 +354,8 @@
     var rows = [
       ['文件名', p.file.name],
       ['页数', state.pages + ' 页'],
-      ['排版', state.layout === 'word' ? 'Word 版式（页数与 Word 一致）'
-        : (state.layout === 'browser' ? '浏览器排版（页数可能与 Word 差 1~2 页，内容完整不缺页）' : '原始文件页数')],
+      ['排版', state.layout === 'word' ? 'Word 版式，页数与 Word 一致'
+        : (state.layout === 'browser' ? '浏览器排版，页数可能与 Word 差 1~2 页' : '原始文件页数')],
       ['份数', p.copies + ' 份'],
       ['颜色', state.color ? '彩色' : '黑白'],
       ['单双面', state.duplex ? '双面' : '单面'],
@@ -410,5 +423,5 @@
     xhr.send();
   }
   refreshPrintStatus();
-  setInterval(refreshPrintStatus, 10000);
+  setInterval(refreshPrintStatus, 3000);
 })();

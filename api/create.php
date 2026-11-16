@@ -11,7 +11,7 @@ $ext = strtolower((string)(isset($_POST['ext']) ? $_POST['ext'] : 'pdf'));
 if (!in_array($ext, explode(',', ALLOW_EXT), true)) $ext = 'pdf';
 
 $pages = (int)(isset($_POST['pages']) ? $_POST['pages'] : 0);
-if ($pages < 1 || $pages > MAX_PAGES) json_out(['ok' => false, 'msg' => '页数超出范围（1-' . MAX_PAGES . '）']);
+if ($pages < 1 || $pages > MAX_PAGES) json_out(['ok' => false, 'msg' => '页数超出范围，最多 ' . MAX_PAGES . ' 页']);
 
 $copies = max(1, min(50, (int)(isset($_POST['copies']) ? $_POST['copies'] : 1)));
 $color = ((int)(isset($_POST['color']) ? $_POST['color'] : 0) === 1) ? 1 : 0;
@@ -36,8 +36,7 @@ q('INSERT INTO orders(order_no,file_name,file_path,ext,pages,copies,color,duplex
     $buyer, $phone, $dorm, pick_code(), cfg('print_target', 'esp32'), 'uploads/pages/' . $no, client_ip(), time(),
 ]);
 
-$mode = print_mode();
-if ($mode === 'esp32' && printer_lang() === 'escpr') $mode = 'escpr';
+$mode = (printer_lang() === 'escpr') ? 'escpr' : 'esp32';
 
 json_out([
     'ok' => true,

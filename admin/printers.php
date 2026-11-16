@@ -19,26 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $printers = all('SELECT * FROM printers ORDER BY id ASC');
 
-$mode = print_mode();
-$ippUrl = ipp_target();
-$ippOk = false;
-if ($mode === 'ipp' && $ippUrl !== '') {
-    $u = parse_url($ippUrl);
-    $port = isset($u['port']) ? (int)$u['port'] : 631;
-    for ($i = 0; $i < 3; $i++) {
-        $fp = @fsockopen($u['host'], $port, $en, $es, 2);
-        if ($fp) { $ippOk = true; @fclose($fp); break; }
-        usleep(200000);
-    }
-}
 admin_head('打印机', 'printers');
 ?>
 <div class="card">
   <h1>打印机</h1>
   <table class="kv" style="margin-bottom:18px">
-    <tr><td>出纸方式</td><td><?= $mode === 'ipp' ? 'IPP 直打' : 'ESP32 打印盒' ?></td></tr>
-    <tr><td>打印机地址</td><td><?= $mode === 'ipp' ? h($ippUrl !== '' ? $ippUrl : '（未填写）') : 'USB 接 ESP32 打印盒（不走 IPP）' ?></td></tr>
-    <tr><td>连接状态</td><td><?= $mode === 'ipp' ? ($ippOk ? '<span class="ok">已连接</span>' : '<span class="err">连不上</span>') : '—' ?></td></tr>
+    <tr><td>出纸方式</td><td>ESP32 打印盒</td></tr>
+    <tr><td>打印语言</td><td><?= printer_lang() === 'escpr' ? 'ESC/P-R' : 'PCL5/6' ?></td></tr>
   </table>
   <table class="list">
     <tr><th>名称</th><th>备注</th><th>状态</th><th>操作</th></tr>

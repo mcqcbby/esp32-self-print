@@ -129,7 +129,7 @@ function escpr_a4_from_images($files, $outPath, $color = false, $paper = 'A4', $
     foreach ($files as $f) {
         $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
         if ($ext !== 'jpg' && $ext !== 'jpeg') {
-            return [false, 'ESC/P-R 通道需要 JPEG 页面（当前为 ' . basename($f) . '），请重新上传'];
+            return [false, 'ESC/P-R 通道需要 JPEG 页面，当前为 ' . basename($f) . '，请重新上传'];
         }
         $data = @file_get_contents($f);
         if ($data === false || substr($data, 0, 2) !== "\xFF\xD8") {

@@ -10,18 +10,24 @@ $queue = one('SELECT COUNT(*) c FROM orders WHERE status IN (1,2)');
 $total = one('SELECT COUNT(*) c, SUM(amount) m FROM orders WHERE status IN (1,2,3)');
 $pending = one('SELECT COUNT(*) c FROM orders WHERE status=1');
 
-$mode = print_mode();
-$ippUrl = ipp_target();
-$ippOk = false;
-if ($mode === 'ipp' && $ippUrl !== '') {
-    $u = parse_url($ippUrl);
-    $port = isset($u['port']) ? (int)$u['port'] : 631;
-    for ($i = 0; $i < 3; $i++) {
-        $fp = @fsockopen($u['host'], $port, $en, $es, 2);
-        if ($fp) { $ippOk = true; @fclose($fp); break; }
-        usleep(200000);
-    }
+// 打印机在线判断：读打印盒最近一次上报（json），15 秒内有效
+$stFile = LOG_DIR . '/esp32_state.json';
+$st = [];
+if (is_file($stFile)) {
+    $tmp = json_decode((string)@file_get_contents($stFile), true);
+    if (is_array($tmp)) $st = $tmp;
 }
+$stTs = isset($st['ts']) ? (int)$st['ts'] : 0;
+$stAge = $stTs > 0 ? time() - $stTs : 999999;
+$printerOn = $stAge <= 15 && !empty($st['printer_online']);
+$printerKnown = $stAge <= 15;
+$faultText = ($stAge <= 15 && !empty($st['fault'])) ? printer_fault_text($st['fault']) : '';
+$resText = function_exists('fmt_bytes_short') && !empty($st['cpu']) && $stAge <= 15
+    ? 'CPU ' . (int)$st['cpu'] . 'MHz · 负载 ' . (int)($st['load'] ?? 0) . '% · 内存 ' . fmt_bytes_short($st['heap'] ?? 0)
+      . ' · PSRAM ' . fmt_bytes_short($st['psram'] ?? 0)
+      . ' · 信号 ' . (int)($st['rssi'] ?? 0) . 'dBm'
+      . ' · 运行 ' . fmt_duration_short($st['up'] ?? 0)
+    : '—';
 ?>
 <div class="card">
   <h1>今日概览</h1>
@@ -39,43 +45,35 @@ if ($mode === 'ipp' && $ippUrl !== '') {
   <table class="kv">
     <tr><td>PHP 版本</td><td><?= h(PHP_VERSION) ?></td></tr>
     <tr><td>页面图片目录</td><td><?= (is_dir(PAGES_DIR) && is_writable(PAGES_DIR)) ? '<span class="ok">可写</span>' : '<span class="err">不可写</span>' ?></td></tr>
-    <tr><td>出纸方式</td><td><?= $mode === 'ipp'
-        ? 'IPP 直打 · ' . ($ippOk ? '<span class="ok">已连接</span>' : '<span class="err">连不上</span>')
-        : 'ESP32 打印盒 · ' . (printer_lang() === 'escpr' ? 'ESC/P-R' : 'PCL5/6') ?></td></tr>
-    <tr><td>打印机地址</td><td><?= $mode === 'ipp'
-        ? h($ippUrl !== '' ? $ippUrl : '（未填写）')
-        : 'USB 接 ESP32 打印盒（不走 IPP）' ?></td></tr>
-    <tr><td>待打印</td><td><?= (int)$pending['c'] ?> 单<?= (int)$pending['c'] > 0 ? '（<a href="orders.php?st=1">去处理</a>）' : '' ?></td></tr>
+    <tr><td>出纸方式</td><td>ESP32 打印盒 · <?= printer_lang() === 'escpr' ? 'ESC/P-R' : 'PCL5/6' ?></td></tr>
+    <tr><td>待打印</td><td><?= (int)$pending['c'] ?> 单<?= (int)$pending['c'] > 0 ? ' <a href="orders.php?st=1">去处理</a>' : '' ?></td></tr>
     <?php
     $esp = one('SELECT * FROM printers WHERE type=? ORDER BY id ASC LIMIT 1', ['esp32']);
-    $espOnline = $esp && $esp['last_seen'] > time() - 60;
+    $espOnline = $esp && $esp['last_seen'] > time() - 15;
     ?>
-    <tr><td>ESP32 打印盒</td><td><?= $esp
+    <tr><td>ESP32 打印盒</td><td id="espBoxCell"><?= $esp
         ? ($espOnline ? '<span class="ok">在线</span>' : '<span class="err">离线</span>') . ' · 最后上报 ' . h($esp['last_seen'] ? date('Y-m-d H:i:s', (int)$esp['last_seen']) : '—')
         : '<span class="err">未添加打印盒</span>' ?></td></tr>
+    <tr><td>打印机状态</td><td id="printerCell"><?php if (!$printerKnown): ?>
+        <span class="err">离线</span>
+      <?php elseif ($printerOn): ?>
+        <span class="ok">在线</span>
+      <?php else: ?>
+        <span class="err">离线</span>
+      <?php endif; ?>
+    </td></tr>
+    <tr><td>打印机故障</td><td id="printerFaultCell"><?= $faultText !== '' ? '<span class="err">' . h($faultText) . '</span>' : '<span class="ok">无</span>' ?></td></tr>
+    <tr><td>设备资源</td><td id="resCell"><?= h($resText) ?></td></tr>
   </table>
 </div>
 
-<?php
-$logFile = LOG_DIR . '/esp32_state.log';
-$espLines = [];
-if (is_file($logFile)) {
-    $espLines = array_slice(@file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [], -40);
-}
-$espLast = $espLines ? end($espLines) : '';
-$espAge = 999999;
-if ($espLast !== '' && preg_match('/^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)/', $espLast, $mm)) {
-    $espAge = time() - strtotime($mm[1]);
-}
-$printerOn = $espLast !== '' && strpos($espLast, 'printer=1') !== false;
-$printerKnown = $espLast !== '' && strpos($espLast, 'printer=') !== false && $espAge <= 30;
-?>
-<div class="card" style="margin-top:16px">
+<?php /* ESP32 日志卡暂时隐藏，代码保留 */ ?>
+<div class="card" style="margin-top:16px;display:none">
   <h2>ESP32 日志</h2>
   <p class="tip">
     打印机：
     <?php if (!$printerKnown): ?>
-      <span class="err"><?= $espLast === '' ? '还没收到上报' : '上报已过期（打印盒没在跑）' ?></span>
+      <span class="err"><?= $espLast === '' ? '还没收到上报' : '上报已过期' ?></span>
     <?php elseif ($printerOn): ?>
       <span class="ok">在线 · 会领任务</span>
     <?php else: ?>
@@ -83,7 +81,7 @@ $printerKnown = $espLast !== '' && strpos($espLast, 'printer=') !== false && $es
     <?php endif; ?>
     · 打印盒每 3 秒上报一次，只保留最近几条
   </p>
-  <pre style="margin:10px 0 0;padding:10px;background:#0f172a;color:#cbd5e1;border-radius:8px;font-size:12px;line-height:1.6;max-height:320px;overflow:auto;white-space:pre-wrap"><?= h($espLines ? implode("\n", $espLines) : '（还没有上报，等打印盒联网）') ?></pre>
+  <pre style="margin:10px 0 0;padding:10px;background:#0f172a;color:#cbd5e1;border-radius:8px;font-size:12px;line-height:1.6;max-height:320px;overflow:auto;white-space:pre-wrap"><?= h($espLines ? implode("\n", $espLines) : '还没有上报，等打印盒联网') ?></pre>
   <p class="tip" style="margin-top:10px">刷新本页看最新；打印盒离线时这里会一直重复 <code>printer=0</code>。</p>
 </div>
 
@@ -107,9 +105,61 @@ if (is_file($stFile)) {
     · 固件 <?= h(isset($st['fw']) && $st['fw'] !== '' ? $st['fw'] : '—') ?>
     · 状态 <?= h(isset($st['state']) && $st['state'] !== '' ? $st['state'] : '—') ?>
     · 最近上报 <?= h(isset($st['ts']) ? date('H:i:s', (int)$st['ts']) : '—') ?>
-    （打印机离线时不领任务）
   </p>
-  <pre style="margin:10px 0 0;padding:10px;background:#0f172a;color:#cbd5e1;border-radius:8px;font-size:12px;line-height:1.6;max-height:320px;overflow:auto;white-space:pre-wrap"><?= h($fwLines ? implode("\n", $fwLines) : '（设备还没把串口日志推上来）') ?></pre>
+  <pre style="margin:10px 0 0;padding:10px;background:#0f172a;color:#cbd5e1;border-radius:8px;font-size:12px;line-height:1.6;max-height:320px;overflow:auto;white-space:pre-wrap"><?= h($fwLines ? implode("\n", $fwLines) : '设备还没把串口日志推上来') ?></pre>
   <p class="tip" style="margin-top:10px">这里放设备真实运行日志：任务、下载、IPP 结果。日志超过 400KB 会自动只留最后 200KB。</p>
 </div>
+<script>
+(function () {
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function fmt(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts * 1000);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  function bsize(n) {
+    n = +n || 0;
+    if (n <= 0) return '—';
+    if (n >= 1048576) return (n / 1048576).toFixed(1) + 'MB';
+    if (n >= 1024) return Math.round(n / 1024) + 'KB';
+    return n + 'B';
+  }
+  function dur(s) {
+    s = +s || 0;
+    if (s <= 0) return '—';
+    if (s < 60) return s + 's';
+    if (s < 3600) return Math.floor(s / 60) + 'm';
+    return Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
+  }
+  function refresh() {
+    fetch('../api/device_status.php?_=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var box = document.getElementById('espBoxCell');
+        if (box) {
+          box.innerHTML = d.box_online
+            ? '<span class="ok">在线</span> · 最后上报 ' + fmt(d.box_last_seen)
+            : '<span class="err">离线</span> · 最后上报 ' + fmt(d.box_last_seen);
+        }
+        var pr = document.getElementById('printerCell');
+        if (pr) {
+          pr.innerHTML = d.printer_online === true ? '<span class="ok">在线</span>' : '<span class="err">离线</span>';
+        }
+        var ft = document.getElementById('printerFaultCell');
+        if (ft) {
+          ft.innerHTML = d.fault_text ? '<span class="err">' + d.fault_text + '</span>' : '<span class="ok">无</span>';
+        }
+        var res = document.getElementById('resCell');
+        if (res) {
+          res.innerHTML = (d.cpu && d.res_ok)
+            ? 'CPU ' + d.cpu + 'MHz · 负载 ' + (d.load || 0) + '% · 内存 ' + bsize(d.heap) + ' · PSRAM ' + bsize(d.psram) + ' · 信号 ' + d.rssi + 'dBm · 运行 ' + dur(d.uptime)
+            : '—';
+        }
+      })
+      .catch(function () {});
+  }
+  refresh();
+  setInterval(refresh, 3000);
+})();
+</script>
 <?php admin_foot(); ?>

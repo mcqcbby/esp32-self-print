@@ -37,7 +37,7 @@ try {
     <table class="kv">
       <tr><td>后台地址</td><td><a href="admin/login.php">/admin/login.php</a></td></tr>
       <tr><td>默认账号</td><td>admin</td></tr>
-      <tr><td>默认密码</td><td>admin888（登录后请立刻修改）</td></tr>
+      <tr><td>默认密码</td><td>admin888</td></tr>
       <tr><td>打印机配置</td><td>后台 → 打印机设置，填写 Windows 打印机名称</td></tr>
       <tr><td>易支付配置</td><td>后台 → 支付设置，填写接口地址 / PID / KEY</td></tr>
     </table>

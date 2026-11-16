@@ -329,3 +329,77 @@ select, input[type=text], input[type=password], input[type=number], input[type=t
   }
   .field label { font-size: 12px; margin-bottom: 4px; }
 }
+
+/* 后台订单表格：固定列宽，手机端不挤压 */
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 16px; }
+table.list.orders { table-layout: fixed; width: 100%; font-size: 12.5px; }
+table.list.orders th, table.list.orders td { padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+table.list.orders th { font-size: 11.5px; }
+table.list.orders th:nth-child(1) { width: 27%; }
+table.list.orders th:nth-child(2) { width: 21%; }
+table.list.orders th:nth-child(3) { width: 17%; }
+table.list.orders th:nth-child(4) { width: 7%; }
+table.list.orders th:nth-child(5) { width: 10%; }
+table.list.orders th:nth-child(6) { width: 18%; }
+.ono {
+  display: block; font-size: 11px; letter-spacing: -.2px; font-weight: 600; color: var(--accent-deep);
+  text-decoration: none; word-break: break-all; line-height: 1.35;
+}
+.ono:hover { text-decoration: underline; }
+.fname {
+  display: block; font-size: 12px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bname { display: block; font-size: 12px; font-weight: 600; }
+.mini { display: block; margin-top: 3px; font-size: 10.5px; color: var(--sub); line-height: 1.45; word-break: break-all; }
+.num, .money { font-size: 12px; white-space: nowrap; }
+.msg { display: block; margin-top: 4px; font-size: 10.5px; color: #b45309; line-height: 1.4; word-break: break-all; }
+.only-m { display: none; }
+.rowact { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.rowact button { border: 0; cursor: pointer; padding: 3px 7px; font-size: 11px; border-radius: 10px; }
+.badge { white-space: nowrap; }
+
+.pager {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 8px; margin-top: 16px; font-size: 12px;
+}
+.pager a, .pager span.off {
+  padding: 6px 13px; border-radius: 9px; text-decoration: none;
+}
+.pager a { color: var(--accent-deep); background: rgba(255,255,255,.75); border: 1px solid var(--line); }
+.pager a:hover { border-color: var(--accent); }
+.pager span.off { color: #b6c2d1; border: 1px dashed var(--line); }
+.pager .pinfo { color: var(--sub); }
+
+@media (max-width: 560px) {
+  .tablewrap { border-radius: 10px; }
+  table.list.orders { min-width: 0; font-size: 11.5px; }
+  table.list.orders th, table.list.orders td { padding: 8px 4px; }
+  table.list.orders th { font-size: 10.5px; white-space: nowrap; }
+  table.list.orders th:nth-child(1) { width: 32%; }
+  table.list.orders th:nth-child(2) { width: 30%; }
+  table.list.orders th:nth-child(5) { width: 16%; }
+  table.list.orders th:nth-child(6) { width: 22%; }
+  .buyer-col, .pages-col { display: none; }
+  .only-m { display: block; }
+  .ono { font-size: 10.5px; }
+  .fname, .bname, .num, .money { font-size: 11px; }
+  .mini { font-size: 9.5px; margin-top: 2px; }
+  .msg { font-size: 9.5px; }
+  .badge { padding: 3px 7px; font-size: 10.5px; border-radius: 12px; }
+  .rowact { gap: 3px; }
+  .rowact button { padding: 2px 4px; font-size: 9px; border-radius: 8px; }
+}
+
+
+
+/* 后台打印预览：按页显示服务器渲染好的页面图 */
+.pagesview { margin-top: 16px; display: flex; flex-direction: column; gap: 16px; }
+.pageitem { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pagebar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 12px; color: var(--sub); background: #f8fafc; border-bottom: 1px solid var(--line); }
+.pagebar a { color: var(--accent-deep); text-decoration: none; }
+.pageitem img { display: block; width: 100%; height: auto; }
+@media (max-width: 560px) {
+  .pagesview { gap: 12px; }
+  .pagebar { padding: 6px 10px; }
+}

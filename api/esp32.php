@@ -9,19 +9,15 @@ if ($token === '' || !hash_equals((string)cfg('agent_token'), $token)) {
 $action = isset($_GET['action']) ? $_GET['action'] : 'poll';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-/** 打印盒最近上报里写着打印机离线，就别再给它派任务 */
+/** 打印盒最近一次上报里写着打印机离线，就别再给它派任务（15 秒内有效） */
 function esp32_printer_offline_recent()
 {
-    $f = LOG_DIR . '/esp32_state.log';
+    $f = LOG_DIR . '/esp32_state.json';
     if (!is_file($f)) return false;
-    $lines = @file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if (!$lines) return false;
-    $last = end($lines);
-    if (strpos($last, 'printer=0') === false) return false;
-    if (preg_match('/^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)/', $last, $m)) {
-        return time() - strtotime($m[1]) < 30;
-    }
-    return true;
+    $st = json_decode((string)@file_get_contents($f), true);
+    if (!is_array($st) || empty($st['ts'])) return false;
+    if (time() - (int)$st['ts'] > 15) return false;
+    return array_key_exists('printer_online', $st) && !$st['printer_online'];
 }
 
 q('UPDATE printers SET online=1,last_seen=? WHERE type=?', [time(), 'esp32']);
@@ -30,7 +26,13 @@ q('UPDATE printers SET online=1,last_seen=? WHERE type=?', [time(), 'esp32']);
 $stateFile = LOG_DIR . '/esp32_state.json';
 $prParam = isset($_GET['pr']) ? (int)$_GET['pr'] : -1;
 $devState = isset($_GET['state']) ? substr((string)$_GET['state'], 0, 40) : '';
-if ($prParam >= 0 || $devState !== '' || isset($_GET['ip']) || isset($_GET['fw'])) {
+$fault = isset($_GET['fault']) ? substr((string)$_GET['fault'], 0, 80) : null;
+$resKeys = ['cpu', 'load', 'heap', 'psram', 'rssi', 'up'];
+$hasRes = false;
+foreach ($resKeys as $k) {
+    if (isset($_GET[$k])) { $hasRes = true; break; }
+}
+if ($prParam >= 0 || $devState !== '' || isset($_GET['ip']) || isset($_GET['fw']) || $fault !== null || $hasRes) {
     $st = [];
     if (is_file($stateFile)) {
         $old = json_decode((string)@file_get_contents($stateFile), true);
@@ -39,23 +41,23 @@ if ($prParam >= 0 || $devState !== '' || isset($_GET['ip']) || isset($_GET['fw']
     $st['ts'] = time();
     if ($prParam >= 0) $st['printer_online'] = ($prParam === 1);
     if ($devState !== '') $st['state'] = $devState;
+    if ($fault !== null) $st['fault'] = $fault;
     if (isset($_GET['ip'])) $st['ip'] = substr((string)$_GET['ip'], 0, 40);
     if (isset($_GET['fw'])) $st['fw'] = substr((string)$_GET['fw'], 0, 20);
+    foreach ($resKeys as $k) {
+        if (isset($_GET[$k])) $st[$k] = (int)$_GET[$k];
+    }
     @file_put_contents($stateFile, json_encode($st, JSON_UNESCAPED_UNICODE));
 }
 
 if ($action === 'poll') {
-    if (print_mode() === 'ipp') {
-        // 当前走局域网 IPP 直打，ESP32 不参与，避免抢走任务
-        json_out(['ok' => true, 'job' => null, 'note' => 'ipp mode']);
-    }
     if (esp32_printer_offline_recent()) {
         // 打印机不在线，先不派任务，等打印盒下次上报在线
-        json_out(['ok' => true, 'job' => null, 'note' => 'printer offline']);
+        json_out(['ok' => true, 'lang' => printer_lang(), 'job' => null, 'note' => 'printer offline']);
     }
     $job = esp32_claim();
-    if (!$job) json_out(['ok' => true, 'job' => null]);
-    json_out(['ok' => true, 'job' => [
+    if (!$job) json_out(['ok' => true, 'lang' => printer_lang(), 'job' => null]);
+    json_out(['ok' => true, 'lang' => printer_lang(), 'job' => [
         'id' => (int)$job['id'],
         'order_no' => $job['order_no'],
         'file_name' => $job['file_name'],
