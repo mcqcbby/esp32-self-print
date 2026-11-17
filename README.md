@@ -357,7 +357,6 @@ const int   LED_BRIGHT    = 15;                   // 0~255
 | 下载报 301 | 站点协议与 `SERVER_BASE` 不一致，固件已支持跟随 |
 | 切 PCL 后失败 | 旧订单只有 JPG，或打印机未开 9100 |
 | 页数与 Word 差 1~2 页 | 无排版引擎，按浏览器口径，确认页已标注 |
-| 后台长期显示旧状态 | 确认已上传新版 `admin/index.php`、`lib/func.php`、`api/esp32.php` |
 
 ---
 
